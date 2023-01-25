@@ -1,4 +1,4 @@
-DATA ARCHIVE - The-Effects-of-Message-Interactivity-on-the-Perception-of-Customer-Service-Chatbots
+DATA ARCHIVE - The Effects of Message Interactivity on the Perception of Customer Service Chatbots
 ===
 
 This repository includes my Bachelor Thesis project, where I conducted an experiment about the effect of Message Interactivity and the Task Type in Customer Service Chatbots. For the full report see the most recent [version](https://github.com/christophvoe/The-Effects-of-Message-Interactivity-on-the-Perception-of-Customer-Service-Chatbots/blob/main/Manuscript/Bachelor_Thesis_Christoph_Voeltzke_3033352.pdf).
@@ -6,7 +6,7 @@ In the initial project I used SPSS, but repeated the analyses in R-Studio now. T
 
 ---
 
-To assess the conducted analyses of the report, you need to assess the data first. This also includes the raw items and how the constructs are obtained. For more see [Data Processing](https://github.com/christophvoe/The-Effects-of-Message-Interactivity-on-the-Perception-of-Customer-Service-Chatbots/blob/main/Data_processing_and_assumption_checks.Rmd). This file also includes the most important assumption checks needed for an ANCOVA. Feel free to use it as a guide.
+To assess the most accurate version of conducted analyses in the report, you need to assess the data first. This also includes the raw items and how the constructs are obtained. For more see [Data Processing](https://github.com/christophvoe/The-Effects-of-Message-Interactivity-on-the-Perception-of-Customer-Service-Chatbots/blob/main/Data_processing_and_assumption_checks.Rmd). This file also includes the most important assumption checks needed for an ANCOVA. Feel free to use it as a guide.
 
 ---
 
