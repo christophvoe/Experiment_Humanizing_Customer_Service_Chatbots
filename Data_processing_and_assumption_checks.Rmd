@@ -1,0 +1,180 @@
+---
+title: "Data processing"
+author: "Christoph Völtzke"
+date: "2023-01-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(haven)
+library(tidyverse)
+library(car)
+library(ggplot2)
+```
+
+```{r}
+data <- read_sav("Data/BA_AUswertung_final.sav")
+```
+
+```{r}
+data <- data %>%
+  rename(Age = Alter,
+         Customer_sat = CS,
+         Customer_sat_short = CS_K,
+         Orga_perc = OP,
+         Behav_Int = BI,
+         Perc_cont = PC,
+         Social_pres = SP,
+         Product_inv = PI,
+         Chat_use = CA_U,
+         Message_Int = HighMI,
+         Task_Type = HL
+         ) %>%
+  mutate(Message_Int_n = as.numeric(Message_Int),
+         Task_Type_n = as.numeric(Task_Type),
+         Message_Int = case_when(
+           Message_Int == 0 ~ "Low_MI", 
+           Message_Int == 1 ~ "Hi_MI"),
+         Task_Type = case_when(
+           Task_Type == 0 ~ "Comp", 
+           Task_Type == 1 ~ "Human"),
+         Message_Int = as.factor(Message_Int),
+         Task_Type = as.factor(Task_Type),
+         Gender = as.factor(Geschlecht),
+         Degree = as.factor(Abschluss),
+         Q_Gruppe = case_when(
+           Q_Gruppe == 1 ~ "HighMI_HL", 
+           Q_Gruppe == 2 ~ "LowMI_HL",
+           Q_Gruppe == 3 ~ "HighMI_CL",
+           Q_Gruppe == 4 ~ "LowMI_CL"),
+         Condition = as.factor(Q_Gruppe),
+         Customer_sat = as.numeric(Customer_sat),
+         Customer_sat_short = as.numeric(Customer_sat_short),
+         Orga_perc = as.numeric(Orga_perc),
+         Behav_Int = as.numeric(Behav_Int),
+         Perc_cont = as.numeric(Perc_cont),
+         Social_pres = as.numeric(Social_pres),
+         Product_inv = as.numeric(Product_inv),
+         Chat_use = as.numeric(Chat_use),
+         NFHI = as.numeric(NFHI),
+         replace_na(Age, mean(Age))
+         ) %>%
+  filter(Duration__in_seconds_ >= 120) %>%
+  filter(Gender == 1 | Gender == 2) %>%
+  select(Condition,Message_Int,Task_Type,Age,Gender,Degree,Customer_sat,Customer_sat_short,Orga_perc,Behav_Int,NFHI,Perc_cont,Social_pres,Product_inv,Chat_use,Message_Int_n,Task_Type_n)
+
+```
+
+```{r}
+write.csv(data, "Data/data.csv")
+```
+
+## Check for Assumptions
+
+Main DV = Customer_sat 
+Secondary outcomes = Social_pres,Perc_cont
+Main IVs = Message_Int,Task_Type (2x2 Design)
+Moderator = NFHI
+Mediators = Social_pres,Perc_cont
+Covariates = Product_inv, Chat_use
+
+### Homogeneity of Variances
+```{r}
+plot(data$Message_Int,data$Customer_sat)
+leveneTest(lm(Customer_sat ~ Message_Int, data= data))
+
+plot(data$Task_Type,data$Customer_sat)
+leveneTest(lm(Customer_sat ~ Task_Type, data= data))
+```
+
+The plots show some difference in variance, but it is not too extreme. Moreover, some outliers are detected and the Levene test for Message Int is significant. However, as it is an experimental design this should be okay.
+
+### Linearity
+```{r}
+plot(data$Customer_sat,data$NFHI)
+
+plot(data$Customer_sat,data$Perc_cont)
+
+plot(data$Customer_sat,data$Social_pres)
+
+plot(data$Customer_sat,data$Product_inv)
+
+plot(data$Customer_sat,data$Chat_use)
+```
+
+All relations between IV and DV look reasonably linear.
+
+
+### Multicollinearity
+
+```{r}
+cor(data[c(7, 11:15)], use="pairwise.complete.obs")
+model <- lm(Customer_sat ~ Message_Int + Task_Type + Perc_cont + Social_pres + NFHI + Product_inv + Chat_use, data = data)
+#ask for the vif
+vif(model)
+```
+All VIF values are smaller than 10, which indicates no problems with collinearity.
+
+
+### Normality, possible outliers, and homoscedasticity of residuals
+
+```{r}
+plot(model)
+```
+
+1. The residual-fitted plot shows whether the relationship between variables is linear and whether there is equal variance (homoscedasticity) along the regression lines. Here, residual-fitted plot looks homoscedestic and linear.
+2. The QQ plot looks okay although we see some deviations from the gray line in the upper right corner.
+3. The scale-location plot shows if the residuals are spread equally along the predictor range (homoscedastic); this is indicates by the horizontal line with equally spread points
+4. The residuals vs leverage plots help identify influential data points. Values that appear in the upper right or lower left corner behind the red Cook’s distance line are points that would be considered influential.
+
+
+We could conclude that assumptions for the regression analysis are met.
+
+### Homogeneity of regression slopes
+
+Specific assumptions for ANCOVA, since covariates are included in the analyses.
+
+```{r}
+data %>%
+  ggplot(aes(y=Customer_sat, x = Product_inv, colour=(Message_Int))) +
+geom_point()+
+geom_smooth(method = "lm", se=FALSE) +
+xlab("Product_inv") +
+ylab("Customer_sat")
+
+data %>%
+  ggplot(aes(y=Customer_sat, x = Chat_use, colour=(Message_Int))) +
+geom_point()+
+geom_smooth(method = "lm", se=FALSE) +
+xlab("Chat_use") +
+ylab("Customer_sat")
+
+data %>%
+  ggplot(aes(y=Customer_sat, x = Product_inv, colour=(Task_Type))) +
+geom_point()+
+geom_smooth(method = "lm", se=FALSE) +
+xlab("Product_inv") +
+ylab("Customer_sat")
+
+data %>%
+  ggplot(aes(y=Customer_sat, x = Chat_use, colour=(Task_Type))) +
+geom_point()+
+geom_smooth(method = "lm", se=FALSE) +
+xlab("Chat_use") +
+ylab("Customer_sat")
+```
+
+Plots look okay. Only for Task Type and Product involvement the slopes are going in different directions.
+
+
+
+
+
+
+
+
+

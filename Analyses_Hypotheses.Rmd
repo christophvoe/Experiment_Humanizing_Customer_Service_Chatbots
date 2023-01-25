@@ -1,0 +1,126 @@
+---
+title: "Analyses_Hypothesis"
+author: "Christoph Völtzke"
+date: "2023-01-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readr)
+library(DescTools)
+library(lavaan)
+library(tidyverse)
+```
+
+
+```{r}
+data <- read_csv("Data/data.csv")
+data <- data %>%
+  rename(ID = "...1") %>%
+  mutate(ID = as.character(ID),
+         Condition = as.factor(Condition),
+         Message_Int = as.factor(Message_Int),
+         Task_Type = as.factor(Task_Type),
+         NFHI_dicho = case_when(
+           NFHI < mean(NFHI) ~ 0,
+           NFHI >= mean(NFHI) ~ 1)
+         )
+```
+
+```{r}
+summary(data)
+```
+
+# Testing Main effects for Customer Satisfaction, Social Presence and Perceived Contingency
+```{r}
+# Running the ANOVA related to the plot and the research question. The ANOVA results should be used in additon to the plot in order to investigate the research question.
+model1 <- aov(Customer_sat ~ Message_Int + Task_Type + Message_Int*Task_Type + Product_inv + Chat_use + NFHI, data = data)
+summary(model1)
+EtaSq(model1, type=2)
+model2 <- aov(Perc_cont ~ Message_Int + Task_Type + Message_Int*Task_Type  + Product_inv + Chat_use+ NFHI, data = data)
+summary(model2)
+EtaSq(model2, type=2)
+model3 <- aov(Social_pres ~ Message_Int + Task_Type + Message_Int*Task_Type  + Product_inv + Chat_use + NFHI, data = data)
+summary(model3)
+EtaSq(model3, type=2)
+model4 <- aov(Orga_perc ~ Message_Int + Task_Type + Message_Int*Task_Type + Product_inv + Chat_use + NFHI, data = data)
+summary(model4)
+EtaSq(model4, type=2)
+```
+1. hypothesis H1 is supported
+2.  hypotheses H2a,b, and H4a,b are supported
+
+## Mediation analyses
+
+Mediation with Process function by Hayes
+```{r}
+source("process.R")
+```
+```{r}
+# Process needs numerical predictors. Therefore, the IVs are in the df two times. One time as a factor and one time as numeric
+process(data = data, y = "Customer_sat", x = "Message_Int_n", m = c("Perc_cont","Social_pres"), model = 4, effsize =1, total =1, stand =1, cov = c("Product_inv", "Chat_use","NFHI"), boot = 10000 , modelbt = 1, seed = 123)
+```
+A-path to Perceived Contingency: 
+
+Message_Int_n    1.6497    0.1654    9.9713    0.0000    1.3239    1.9755
+
+A-path to Social Presence:
+Message_Int_n    1.4942    0.1641    9.1077    0.0000    1.1712    1.8173
+
+B-path both mediators:
+Perc_cont        0.5934    0.0510   11.6349    0.0000    0.4930    0.6938
+Social_pres      0.1564    0.0514    3.0414    0.0026    0.0551    0.2577
+
+Indirect effects: 
+
+TOTAL          1.2127    0.1547    0.9164    1.5312 
+Total indirect effect. Indirect effects mediated by mediator 1 or 2 taken together. Bootstrapped, here it is significant since the CI does not contain zero.
+
+Perc_cont      0.9789    0.1460    0.6982    1.2781
+Indirect effect mediated by mediator 1. Bootstrapped, here it is significant since the CI does not contain zero.
+
+Social_pres    0.2337    0.0718    0.1032    0.3878
+Indirect effect mediated by mediator 2. Bootstrapped, here it is significant since the CI does not contain zero.
+
+## Moderation - Task Type
+
+```{r}
+process(data = data, y = "Customer_sat", x = "Message_Int_n", m = c("Perc_cont","Social_pres"), w = "Task_Type_n", model = 8, cov = c("Product_inv", "Chat_use","NFHI"), boot = 10000 , center = 2,
+moments = 1, modelbt = 1, seed = 123)
+```
+
+As the  Index of moderated mediation
+     (differences beween conditional indirect effects):
+                Index    BootSE  BootLLCI  BootULCI
+Task_Type_n   -0.2523    0.2044   -0.6472    0.1601
+
+Includes 0 it is not a significant mediated moderation.
+
+
+## Moderation - Task Type
+
+```{r}
+process(data = data, y = "Customer_sat", x = "Message_Int_n", m = c("Perc_cont","Social_pres"), w = "NFHI_dicho", model = 8, cov = c("Product_inv", "Chat_use"), boot = 10000 , center = 2,
+moments = 1, modelbt = 1, seed = 123)
+```
+
+As the Index of moderated mediation
+     (differences beween conditional indirect effects):
+               Index    BootSE  BootLLCI  BootULCI
+NFHI_dicho   -0.0298    0.0552   -0.1484    0.0746
+
+Includes 0 it is not a significant mediated moderation.
+
+## Extra simple Moderation NFHI
+```{r}
+model5 <- aov(Customer_sat ~ Message_Int + Task_Type + Message_Int*NFHI_dicho +  Task_Type*NFHI_dicho + Product_inv + Chat_use , data = data)
+summary(model5)
+```
+
+It is not moderating the effect, however it still has an influence on the outcome variable.
+
