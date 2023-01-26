@@ -21,6 +21,7 @@ Several models are tested and can be used as a guide for mediation analyses.
 |[Analyses Hypotheses](https://github.com/christophvoe/The-Effects-of-Message-Interactivity-on-the-Perception-of-Customer-Service-Chatbots/blob/main/Analyses_Hypotheses.Rmd)         |R-Markdown-script to run analyswes|
 |[/Data](https://github.com/christophvoe/The-Effects-of-Message-Interactivity-on-the-Perception-of-Customer-Service-Chatbots/tree/main/Data)                          |Folder containing data files. |
 |[/Functions/process.R](https://github.com/christophvoe/The-Effects-of-Message-Interactivity-on-the-Perception-of-Customer-Service-Chatbots/blob/main/Functions/process.R)                     |Process function by Hayes for mediation|
+|[/Manuscript](https://github.com/christophvoe/Experiment_Humanizing_Customer_Service_Chatbots/tree/main/Manuscript)                     |Original Bachelor Thesis (English) & Summary Presentation (German) |
 
 For any help with the files in this archive, please contact Christoph Völtzke (voeltzke.christoph@gmail.com). 
 
