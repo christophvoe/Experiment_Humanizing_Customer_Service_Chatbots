@@ -22,14 +22,14 @@ data <- read_sav("Data/BA_AUswertung_final.sav")
 
 ```{r}
 data <- data %>%
+  mutate(NFHI = mean(Q3_1,Q3_2,Q3_3),
+         Customer_sat = mean(Q25_1,Q25_2,Q25_3),
+         Perc_cont = mean(Q26_1,Q26_2,Q26_3),
+         Social_pres = mean(Q27_1,Q27_2,Q27_3,Q27_4,Q27_5),
+         Product_inv = mean(Q31_1,Q31_2,Q31_3)) %>%
   rename(Age = Alter,
-         Customer_sat = CS,
-         Customer_sat_short = CS_K,
          Orga_perc = OP,
          Behav_Int = BI,
-         Perc_cont = PC,
-         Social_pres = SP,
-         Product_inv = PI,
          Chat_use = CA_U,
          Message_Int = HighMI,
          Task_Type = HL
@@ -53,7 +53,6 @@ data <- data %>%
            Q_Gruppe == 4 ~ "LowMI_CL"),
          Condition = as.factor(Q_Gruppe),
          Customer_sat = as.numeric(Customer_sat),
-         Customer_sat_short = as.numeric(Customer_sat_short),
          Orga_perc = as.numeric(Orga_perc),
          Behav_Int = as.numeric(Behav_Int),
          Perc_cont = as.numeric(Perc_cont),
@@ -65,7 +64,7 @@ data <- data %>%
          ) %>%
   filter(Duration__in_seconds_ >= 120) %>%
   filter(Gender == 1 | Gender == 2) %>%
-  select(Condition,Message_Int,Task_Type,Age,Gender,Degree,Customer_sat,Customer_sat_short,Orga_perc,Behav_Int,NFHI,Perc_cont,Social_pres,Product_inv,Chat_use,Message_Int_n,Task_Type_n)
+  select(Condition,Message_Int,Task_Type,Age,Gender,Degree,Customer_sat,Orga_perc,Behav_Int,NFHI,Perc_cont,Social_pres,Product_inv,Chat_use,Message_Int_n,Task_Type_n)
 
 ```
 

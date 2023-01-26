@@ -59,7 +59,7 @@ EtaSq(model4, type=2)
 
 Mediation with Process function by Hayes
 ```{r}
-source("process.R")
+source("Functions/process.R")
 ```
 ```{r}
 # Process needs numerical predictors. Therefore, the IVs are in the df two times. One time as a factor and one time as numeric
